@@ -20,7 +20,7 @@ namespace rpc_light
         writer_t m_writer;
         reader_t m_reader;
 
-        response_t handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t())
+        const response_t handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t())
         {
             try
             {

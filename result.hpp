@@ -41,7 +41,7 @@ namespace rpc_light
             return m_is_batch;
         }
 
-        const std::vector<response_t> get_batch()
+        const std::vector<response_t> get_batch() const
         {
             return std::get<std::vector<response_t>>(m_response);
         }

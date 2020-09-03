@@ -16,9 +16,6 @@ namespace rpc_light
 {
     class writer_t
     {
-
-        friend class value_t;
-
         rapidjson::Value get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
         {
             rapidjson::Value id_value;

@@ -73,7 +73,7 @@ namespace rpc_light
                 std::launch::async, [=](const std::string req_str) {
                     try
                     {
-                         if (auto batch = m_reader.get_batch(req_str); !batch.empty())
+                        if (auto batch = m_reader.get_batch(req_str); !batch.empty())
                         {
                             std::vector<response_t> responses;
                             std::vector<std::future<result_t>> futures;

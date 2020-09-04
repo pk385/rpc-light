@@ -17,7 +17,7 @@ namespace rpc_light
 
     class reader_t
     {
-        value_t get_id_obj(const rapidjson::Value &id)
+        const value_t get_id_obj(const rapidjson::Value &id)
         {
             if (id.IsString())
                 return std::string(id.GetString());
@@ -34,7 +34,7 @@ namespace rpc_light
             throw ex_bad_request("Invalid id type.");
         }
 
-        value_t get_value_obj(const rapidjson::Value &value) const
+        const value_t get_value_obj(const rapidjson::Value &value) const
         {
             switch (value.GetType())
             {
@@ -92,7 +92,6 @@ namespace rpc_light
         }
 
     public:
-
         const std::vector<std::string> get_batch(const std::string_view &str)
         {
             std::vector<std::string> batch;

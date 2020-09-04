@@ -13,22 +13,21 @@ namespace rpc_light
 {
     class result_t
     {
-        const bool m_has_error;
-        const bool m_is_batch;
+        const bool m_has_error, m_is_batch;
         const std::string m_string;
         std::variant<response_t, std::vector<response_t>> m_response;
 
     public:
-        result_t(response_t &response, const bool &has_error = false)
+        result_t(const response_t &response, const bool &has_error = false)
             : m_response(response), m_has_error(has_error), m_is_batch(false) {}
 
-        result_t(response_t &response, const std::string_view &str, const bool &has_error = false)
+        result_t(const response_t &response, const std::string_view &str, const bool &has_error = false)
             : m_response(response), m_string(str), m_has_error(has_error), m_is_batch(false) {}
 
-        result_t(std::vector<response_t> &response, const bool &has_error = false)
+        result_t(const std::vector<response_t> &response, const bool &has_error = false)
             : m_response(response), m_has_error(has_error), m_is_batch(true) {}
 
-        result_t(std::vector<response_t> &response, const std::string_view &str, const bool &has_error = false)
+        result_t(const std::vector<response_t> &response, const std::string_view &str, const bool &has_error = false)
             : m_response(response), m_string(str), m_has_error(has_error), m_is_batch(true) {}
 
         const bool has_error() const

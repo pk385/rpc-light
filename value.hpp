@@ -29,6 +29,18 @@ namespace rpc_light
         {
         };
 
+        template <typename value_type>
+        const auto vector_convert(std::vector<value_type> value)
+        {
+            return std::vector<value_t>(value.begin(), value.end());
+        }
+
+        template <typename value_type>
+        const auto map_convert(std::map<std::string, value_type> value)
+        {
+            return std::map<std::string, value_t>(value.begin(), value.end());
+        }
+
         using variant_t = std::variant<std::monostate, std::vector<value_t>,
                                        bool, double, int32_t, int64_t, std::string,
                                        std::map<std::string, value_t>>;
@@ -39,7 +51,13 @@ namespace rpc_light
         value_t() {}
 
         template <typename value_type>
-        value_t(value_type value) : m_value(value) {}
+        value_t(const value_type &value) : m_value(value) {}
+
+        template <typename value_type>
+        value_t(const std::vector<value_type> &value) : m_value(vector_convert(value)) {}
+
+        template <typename value_type>
+        value_t(const std::map<std::string, value_type> &value) : m_value(map_convert(value)) {}
 
         const bool has_value() const
         {
@@ -47,7 +65,7 @@ namespace rpc_light
         }
 
         template <typename value_type>
-        const value_type get_alt(const bool no_convert = false) const
+        const value_type get_alt(const bool &no_convert = false) const
         {
 
             if constexpr (can_hold_alt<value_type, variant_t>::value)

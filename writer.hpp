@@ -16,7 +16,7 @@ namespace rpc_light
 {
     class writer_t
     {
-        rapidjson::Value get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
+        const rapidjson::Value get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
         {
             rapidjson::Value id_value;
             std::visit([&](auto &&arg) {
@@ -40,7 +40,7 @@ namespace rpc_light
             return id_value;
         }
 
-        rapidjson::Value get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
+        const rapidjson::Value get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
         {
             rapidjson::Value obj_value;
             std::visit([&](auto &&arg) {
@@ -52,7 +52,7 @@ namespace rpc_light
                 {
                     obj_value.SetArray();
                     auto arr = obj.get_alt<array_t>();
-                    for (auto& e : arr)
+                    for (auto &e : arr)
                         if (auto e_value = get_obj_value(e, alloc); !e_value.IsNull())
                             obj_value.PushBack(e_value, alloc);
                 }
@@ -76,7 +76,8 @@ namespace rpc_light
                     obj_value.SetObject();
                     auto strct = obj.get_alt<struct_t>();
                     for (auto e : strct)
-                        obj_value.AddMember(rapidjson::Value(e.first.c_str(), alloc), get_obj_value(e.second, alloc), alloc);
+                        obj_value.AddMember(rapidjson::Value(e.first.c_str(), alloc),
+                                            (rapidjson::Value)get_obj_value(e.second, alloc), alloc);
                 }
                 else
                     throw ex_internal_error("Invalid object type.");

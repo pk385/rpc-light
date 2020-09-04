@@ -10,12 +10,10 @@ namespace rpc_light
 {
     class response_t
     {
-        const value_t m_value;
-        const value_t m_id;
+        const value_t m_value, m_id, m_data;
         const int m_code;
-        const std::string m_message;
-        const value_t m_data;
         const bool m_is_notif;
+        const std::string m_message;
 
     public:
         response_t(const value_t &value)

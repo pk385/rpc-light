@@ -13,8 +13,8 @@ namespace rpc_light
 {
     class result_t
     {
-        const bool m_has_error, m_is_batch;
-        const std::string m_string;
+        bool m_has_error, m_is_batch;
+        std::string m_string;
         std::variant<response_t, std::vector<response_t>> m_response;
 
     public:
@@ -30,27 +30,27 @@ namespace rpc_light
         result_t(const std::vector<response_t> &response, const std::string_view &str, const bool &has_error = false)
             : m_response(response), m_string(str), m_has_error(has_error), m_is_batch(true) {}
 
-        const bool has_error() const
+        const inline bool has_error() const
         {
             return m_has_error;
         }
 
-        const bool is_batch() const
+        const inline bool is_batch() const
         {
             return m_is_batch;
         }
 
-        const std::vector<response_t> get_batch() const
+        const inline std::vector<response_t> get_batch() const
         {
             return std::get<std::vector<response_t>>(m_response);
         }
 
-        const response_t get_response() const
+        const inline response_t get_response() const
         {
             return std::get<response_t>(m_response);
         }
 
-        const auto get_response_str() const
+        const inline std::string get_response_str() const
         {
             return m_string;
         }

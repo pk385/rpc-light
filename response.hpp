@@ -10,10 +10,10 @@ namespace rpc_light
 {
     class response_t
     {
-        const value_t m_value, m_id, m_data;
-        const int m_code;
-        const bool m_is_notif;
-        const std::string m_message;
+         int m_code;
+         bool m_is_notif;
+         std::string m_message;
+         value_t m_value, m_id, m_data;
 
     public:
         response_t(const value_t &value)
@@ -31,37 +31,37 @@ namespace rpc_light
         response_t(const int &code, const std::string_view &message, const value_t &id, const value_t &data)
             : m_code(code), m_message(message), m_id(id), m_data(data), m_is_notif(false) {}
 
-        const value_t get_id() const
+        const inline value_t get_id() const
         {
             return m_id;
         }
 
-        const bool is_notification() const
+        const inline bool is_notification() const
         {
             return m_is_notif;
         }
 
-        const value_t get_value() const
+        const inline value_t get_value() const
         {
             return m_value;
         }
 
-        const int get_code() const
+        const inline int get_code() const
         {
             return m_code;
         }
 
-        const value_t get_data() const
+        const inline value_t get_data() const
         {
             return m_data;
         }
 
-        const bool has_error() const
+        const inline bool has_error() const
         {
             return m_code != 0;
         }
 
-        const std::string get_message() const
+        const inline std::string get_message() const
         {
             return m_message;
         }

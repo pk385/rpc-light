@@ -16,7 +16,8 @@ namespace rpc_light
 {
     class writer_t
     {
-        const rapidjson::Value get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
+        const rapidjson::Value 
+        get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
         {
             rapidjson::Value id_value;
             std::visit([&](auto &&arg) {
@@ -40,7 +41,8 @@ namespace rpc_light
             return id_value;
         }
 
-        const rapidjson::Value get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
+        const rapidjson::Value 
+        get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
         {
             rapidjson::Value obj_value;
             std::visit([&](auto &&arg) {
@@ -87,7 +89,8 @@ namespace rpc_light
         }
 
     public:
-        const std::string serialize_batch_request(std::vector<request_t> requests)
+        const std::string 
+        serialize_batch_request(const std::vector<request_t> &requests) const
         {
             rapidjson::Document document;
             document.SetArray();
@@ -118,7 +121,8 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string serialize_batch_response(std::vector<response_t> responses)
+        const std::string 
+        serialize_batch_response(const std::vector<response_t> &responses) const
         {
             rapidjson::Document document;
             document.SetArray();
@@ -169,7 +173,8 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string serialize_request(const request_t &request)
+        const std::string 
+        serialize_request(const request_t &request) const
         {
             rapidjson::Document document;
             document.SetObject();
@@ -194,7 +199,8 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string serialize_response(const response_t &response)
+        const std::string 
+        serialize_response(const response_t &response) const
         {
             if (response.is_notification() && !response.has_error())
                 return "";

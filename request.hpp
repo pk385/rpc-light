@@ -10,10 +10,10 @@ namespace rpc_light
 {
     class request_t
     {
-        const std::string m_method;
-        const params_t m_params;
-        const value_t m_id;
-        const bool m_is_notif;
+         bool m_is_notif;
+         value_t m_id;
+         params_t m_params;
+         std::string m_method;
 
     public:
         request_t(const std::string_view &method_name, const params_t &params)

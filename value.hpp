@@ -30,13 +30,13 @@ namespace rpc_light
         };
 
         template <typename value_type>
-        const auto vector_convert(std::vector<value_type> value)
+        const auto vector_convert(const std::vector<value_type>& value)
         {
             return std::vector<value_t>(value.begin(), value.end());
         }
 
         template <typename value_type>
-        const auto map_convert(std::map<std::string, value_type> value)
+        const auto map_convert(const std::map<std::string, value_type>& value)
         {
             return std::map<std::string, value_t>(value.begin(), value.end());
         }
@@ -59,7 +59,7 @@ namespace rpc_light
         template <typename value_type>
         value_t(const std::map<std::string, value_type> &value) : m_value(map_convert(value)) {}
 
-        const bool has_value() const
+        const inline bool has_value() const
         {
             return !std::holds_alternative<std::monostate>(m_value);
         }
@@ -91,7 +91,7 @@ namespace rpc_light
             throw ex_internal_error("Bad alternative.");
         }
 
-        const auto &get_variant() const
+        const inline auto &get_variant() const
         {
             return m_value;
         }

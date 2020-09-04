@@ -17,7 +17,7 @@ namespace rpc_light
 
     class reader_t
     {
-        const value_t get_id_obj(const rapidjson::Value &id)
+        const value_t get_id_obj(const rapidjson::Value &id) const
         {
             if (id.IsString())
                 return std::string(id.GetString());
@@ -92,7 +92,7 @@ namespace rpc_light
         }
 
     public:
-        const std::vector<std::string> get_batch(const std::string_view &str)
+        const std::vector<std::string> get_batch(const std::string_view &str) const
         {
             std::vector<std::string> batch;
             rapidjson::Document document;
@@ -113,7 +113,7 @@ namespace rpc_light
             return batch;
         }
 
-        const request_t deserialize_request(const std::string_view &request_string)
+        const request_t deserialize_request(const std::string_view &request_string) const
         {
             rapidjson::Document document;
             document.Parse(request_string.data());
@@ -148,7 +148,7 @@ namespace rpc_light
             return request_t(method->value.GetString(), params, get_id_obj(id->value));
         }
 
-        const response_t deserialize_response(const std::string_view &response_string)
+        const response_t deserialize_response(const std::string_view &response_string) const
         {
             rapidjson::Document document;
             document.Parse(response_string.data());

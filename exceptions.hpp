@@ -7,7 +7,7 @@ namespace rpc_light
 {
     class ex_method_used : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -15,7 +15,7 @@ namespace rpc_light
     };
     class ex_bad_params : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -23,7 +23,7 @@ namespace rpc_light
     };
     class ex_bad_method : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -31,7 +31,7 @@ namespace rpc_light
     };
     class ex_parse_error : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -39,7 +39,7 @@ namespace rpc_light
     };
     class ex_bad_request : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -47,7 +47,7 @@ namespace rpc_light
     };
     class ex_internal_error : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }
@@ -55,7 +55,7 @@ namespace rpc_light
     };
     class ex_unknown : public std::runtime_error
     {
-        const std::string m_data;
+        std::string m_data;
 
     public:
         const std::string data() const { return m_data; }

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <chrono>
 
-std::map<std::string, int> test_fn(int&& i)
+std::map<std::string, int> test_fn(int i, int ii)
 {
     return {{"test", i}};
 }
@@ -18,7 +18,7 @@ bool im_a_bool(const bool &b)
 
 auto print_notification(const std::string_view &msg)
 {
-    std::cout << msg << std::endl;
+     std::cout << msg << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -33,14 +33,12 @@ int main(int argc, char **argv)
     auto batch = client.create_batch(
         client.create_request("print_notification", 1, "WE ARE PRINTING"),
         client.create_request("bool", 2, true),
-        client.create_request("test", 3, 55));
-    std::cout << batch << std::endl
-              << std::endl;
+        client.create_request("test", 3, 1, 2));
+     std::cout << batch << std::endl << std::endl;
 
     auto batch_server = server.handle_request(batch).get();
     auto batch_response = batch_server.get_response_str();
-    std::cout << batch_response << std::endl
-              << std::endl;
+     std::cout << batch_response << std::endl << std::endl;
 
     auto batch_client = client.handle_response(batch_response).get();
 }

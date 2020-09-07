@@ -13,26 +13,38 @@ namespace rpc_light
 {
     class result_t
     {
-        bool m_has_error, m_is_batch;
-        std::string m_string;
-        std::variant<response_t, std::vector<response_t>> m_response;
+        using batch_t = std::vector<response_t>;
+        const std::string m_string;
+        const bool m_has_error, m_is_batch, m_has_response;
+        const std::variant<null_t, response_t, batch_t> m_response;
 
     public:
-        result_t(const response_t &response, const bool &has_error = false)
-            : m_response(response), m_has_error(has_error), m_is_batch(false) {}
+        result_t(const bool &has_error = false)
+            : m_has_error(has_error),
+              m_is_batch(false), m_has_response(false) {}
 
-        result_t(const response_t &response, const std::string_view &str, const bool &has_error = false)
-            : m_response(response), m_string(str), m_has_error(has_error), m_is_batch(false) {}
+        result_t(const std::string_view &str, const bool &has_error = false)
+            : m_string(str), m_has_error(has_error),
+              m_is_batch(false), m_has_response(false) {}
 
-        result_t(const std::vector<response_t> &response, const bool &has_error = false)
-            : m_response(response), m_has_error(has_error), m_is_batch(true) {}
+        template <typename response_type>
+        result_t(const response_type &response, const bool &has_error = false)
+            : m_response(response), m_has_error(has_error), m_has_response(true),
+              m_is_batch(std::is_same_v<response_type, batch_t>) {}
 
-        result_t(const std::vector<response_t> &response, const std::string_view &str, const bool &has_error = false)
-            : m_response(response), m_string(str), m_has_error(has_error), m_is_batch(true) {}
+        template <typename response_type>
+        result_t(const response_type &response, const std::string_view &str, const bool &has_error = false)
+            : m_response(response), m_string(str), m_has_error(has_error), m_has_response(true),
+              m_is_batch(std::is_same_v<response_type, batch_t>) {}
 
         const inline bool has_error() const
         {
             return m_has_error;
+        }
+
+        const inline bool has_response() const
+        {
+            return m_has_response;
         }
 
         const inline bool is_batch() const
@@ -40,9 +52,9 @@ namespace rpc_light
             return m_is_batch;
         }
 
-        const inline std::vector<response_t> get_batch() const
+        const inline batch_t get_batch() const
         {
-            return std::get<std::vector<response_t>>(m_response);
+            return std::get<batch_t>(m_response);
         }
 
         const inline response_t get_response() const

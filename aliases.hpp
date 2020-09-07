@@ -11,8 +11,7 @@ namespace rpc_light
 {
     using array_t = std::vector<value_t>;
     using struct_t = std::map<std::string, value_t>;
-    using params_t = std::vector<value_t>;
-    using method_t = std::function<value_t(params_t)>;
+    using method_t = std::function<value_t(array_t)>;
     using null_t = std::monostate;
     const char
         JSON_PROTO[] = "jsonrpc",

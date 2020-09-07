@@ -21,7 +21,7 @@ namespace rpc_light
         writer_t m_writer;
         dispatcher_t m_dispatcher;
 
-        const response_t 
+        const response_t
         handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t()) const
         {
             try

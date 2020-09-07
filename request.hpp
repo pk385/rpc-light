@@ -10,34 +10,61 @@ namespace rpc_light
 {
     class request_t
     {
-         bool m_is_notif;
-         value_t m_id;
-         params_t m_params;
-         std::string m_method;
+        const value_t m_id;
+        const std::string m_method;
+        const bool m_is_notif, m_named_params, m_has_params;
+        const std::variant<null_t, array_t, struct_t> m_params;
 
     public:
-        request_t(const std::string_view &method_name, const params_t &params)
-            : m_method(method_name), m_params(params), m_id(), m_is_notif(true) {}
+        request_t(const std::string_view &method_name)
+            : m_method(method_name), m_is_notif(true),
+              m_named_params(false), m_has_params(false) {}
 
-        request_t(const std::string_view &method_name, const params_t &params, const value_t &id)
-            : m_method(method_name), m_params(params), m_id(id), m_is_notif(false) {}
+        request_t(const std::string_view &method_name, const value_t &id)
+            : m_method(method_name), m_id(id), m_is_notif(false),
+              m_named_params(false), m_has_params(false) {}
 
-        const std::string get_method() const
+        template <typename params_type>
+        request_t(const std::string_view &method_name, const params_type &params)
+            : m_method(method_name), m_params(params), m_is_notif(true), m_has_params(true),
+              m_named_params(std::is_same_v<params_type, struct_t>) {}
+
+        template <typename params_type>
+        request_t(const std::string_view &method_name, const params_type &params, const value_t &id)
+            : m_method(method_name), m_params(params), m_id(id), m_is_notif(false), m_has_params(true),
+              m_named_params(std::is_same_v<params_type, struct_t>) {}
+
+        const inline std::string get_method() const
         {
             return m_method;
         }
 
-        const bool is_notification() const
+        const inline bool is_notification() const
         {
             return m_is_notif;
         }
 
-        const params_t get_params() const
+        const inline bool has_params() const
         {
-            return m_params;
+            return m_has_params;
         }
 
-        const value_t get_id() const
+        const inline bool has_named_params() const
+        {
+            return m_named_params;
+        }
+
+        const inline array_t get_params_arr() const
+        {
+            return std::get<array_t>(m_params);
+        }
+
+        const inline struct_t get_params_str() const
+        {
+            return std::get<struct_t>(m_params);
+        }
+
+        const inline value_t get_id() const
         {
             return m_id;
         }

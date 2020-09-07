@@ -13,7 +13,6 @@ namespace rpc_light
     {
         template <typename type, typename variant_type>
         struct can_hold_alt;
-
         template <typename type, typename... variant_type>
         struct can_hold_alt<type, std::variant<variant_type...>>
             : public std::disjunction<std::is_same<type, variant_type>...>
@@ -22,24 +21,11 @@ namespace rpc_light
 
         template <typename type, typename variant_type>
         struct can_convert_alt;
-
         template <typename type, typename... variant_type>
         struct can_convert_alt<type, std::variant<variant_type...>>
             : public std::disjunction<std::is_convertible<variant_type, type>...>
         {
         };
-
-        template <typename value_type>
-        const auto vector_convert(const std::vector<value_type>& value)
-        {
-            return std::vector<value_t>(value.begin(), value.end());
-        }
-
-        template <typename value_type>
-        const auto map_convert(const std::map<std::string, value_type>& value)
-        {
-            return std::map<std::string, value_t>(value.begin(), value.end());
-        }
 
         using variant_t = std::variant<std::monostate, std::vector<value_t>,
                                        bool, double, int32_t, int64_t, std::string,
@@ -54,10 +40,12 @@ namespace rpc_light
         value_t(const value_type &value) : m_value(value) {}
 
         template <typename value_type>
-        value_t(const std::vector<value_type> &value) : m_value(vector_convert(value)) {}
+        value_t(const std::vector<value_type> &value)
+            : m_value(std::vector<value_t>(value.begin(), value.end())) {}
 
         template <typename value_type>
-        value_t(const std::map<std::string, value_type> &value) : m_value(map_convert(value)) {}
+        value_t(const std::map<std::string, value_type> &value)
+            : m_value(std::map<std::string, value_t>(value.begin(), value.end())) {}
 
         const inline bool has_value() const
         {
@@ -95,5 +83,5 @@ namespace rpc_light
         {
             return m_value;
         }
-    }; // namespace rpc_light
+    };
 } // namespace rpc_light

@@ -16,7 +16,7 @@ namespace rpc_light
 {
     class writer_t
     {
-        const rapidjson::Value 
+        const rapidjson::Value
         get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
         {
             rapidjson::Value id_value;
@@ -41,7 +41,7 @@ namespace rpc_light
             return id_value;
         }
 
-        const rapidjson::Value 
+        const rapidjson::Value
         get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
         {
             rapidjson::Value obj_value;
@@ -53,7 +53,7 @@ namespace rpc_light
                 else if constexpr (std::is_same_v<type, array_t>)
                 {
                     obj_value.SetArray();
-                    auto arr = obj.get_alt<array_t>();
+                    const auto arr = obj.get_alt<array_t>();
                     for (auto &e : arr)
                         if (auto e_value = get_obj_value(e, alloc); !e_value.IsNull())
                             obj_value.PushBack(e_value, alloc);
@@ -76,8 +76,8 @@ namespace rpc_light
                 else if constexpr (std::is_same_v<type, struct_t>)
                 {
                     obj_value.SetObject();
-                    auto strct = obj.get_alt<struct_t>();
-                    for (auto e : strct)
+                    const auto strct = obj.get_alt<struct_t>();
+                    for (auto &e : strct)
                         obj_value.AddMember(rapidjson::Value(e.first.c_str(), alloc),
                                             (rapidjson::Value)get_obj_value(e.second, alloc), alloc);
                 }
@@ -89,7 +89,7 @@ namespace rpc_light
         }
 
     public:
-        const std::string 
+        const std::string
         serialize_batch_request(const std::vector<request_t> &requests) const
         {
             rapidjson::Document document;
@@ -101,9 +101,25 @@ namespace rpc_light
                 request.SetObject();
                 request.AddMember(JSON_PROTO, JSON_VER, alloc);
                 request.AddMember(JSON_METHOD, rapidjson::Value(e.get_method().c_str(), alloc), alloc);
-                auto params_value = get_obj_value(e.get_params(), alloc);
-                if (!params_value.IsNull() && params_value.GetArray().Size())
-                    request.AddMember(JSON_PARAMS, params_value, alloc);
+                if (e.has_params())
+                {
+                    if (e.has_named_params())
+                    {
+                        rapidjson::Value params_value = get_obj_value(e.get_params_str(), alloc);
+                        if (params_value.IsNull())
+                            throw ex_internal_error("Batch params object was null.");
+
+                        request.AddMember(JSON_PARAMS, params_value, alloc);
+                    }
+                    else
+                    {
+                        rapidjson::Value params_value = get_obj_value(e.get_params_arr(), alloc);
+                        if (params_value.IsNull())
+                            throw ex_internal_error("Batch params array was null.");
+
+                        request.AddMember(JSON_PARAMS, params_value, alloc);
+                    }
+                }
 
                 if (!e.is_notification())
                 {
@@ -121,7 +137,7 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string 
+        const std::string
         serialize_batch_response(const std::vector<response_t> &responses) const
         {
             rapidjson::Document document;
@@ -140,11 +156,11 @@ namespace rpc_light
                 {
                     auto code_value = get_obj_value(e.get_code(), alloc);
                     if (code_value.IsNull())
-                        throw ex_internal_error("Null code value.");
+                        throw ex_internal_error("Batch null code value.");
 
                     auto message_value = get_obj_value(e.get_message(), alloc);
                     if (message_value.IsNull())
-                        throw ex_internal_error("Null message value.");
+                        throw ex_internal_error("Batch null message value.");
 
                     auto data_value = get_obj_value(e.get_data(), alloc);
                     rapidjson::Value error_obj;
@@ -159,7 +175,7 @@ namespace rpc_light
                 else
                 {
                     if (id_value.IsNull())
-                        throw ex_internal_error("Response was not notification with null id.");
+                        throw ex_internal_error("Batch response was not notification with null id.");
 
                     auto result_value = get_obj_value(e.get_value(), alloc);
                     response.AddMember(JSON_RESULT, result_value, alloc);
@@ -173,7 +189,7 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string 
+        const std::string
         serialize_request(const request_t &request) const
         {
             rapidjson::Document document;
@@ -181,9 +197,25 @@ namespace rpc_light
             auto &alloc = document.GetAllocator();
             document.AddMember(JSON_PROTO, JSON_VER, alloc);
             document.AddMember(JSON_METHOD, rapidjson::Value(request.get_method().c_str(), alloc), alloc);
-            auto params_value = get_obj_value(request.get_params(), alloc);
-            if (!params_value.IsNull() && params_value.GetArray().Size())
-                document.AddMember(JSON_PARAMS, params_value, alloc);
+            if (request.has_params())
+            {
+                if (request.has_named_params())
+                {
+                    rapidjson::Value params_value = get_obj_value(request.get_params_str(), alloc);
+                    if (params_value.IsNull())
+                        throw ex_internal_error("Params object was null.");
+
+                    document.AddMember(JSON_PARAMS, params_value, alloc);
+                }
+                else
+                {
+                    rapidjson::Value params_value = get_obj_value(request.get_params_arr(), alloc);
+                    if (params_value.IsNull())
+                        throw ex_internal_error("Params array was null.");
+
+                    document.AddMember(JSON_PARAMS, params_value, alloc);
+                }
+            }
 
             if (!request.is_notification())
             {
@@ -199,7 +231,7 @@ namespace rpc_light
             return strbuf.GetString();
         }
 
-        const std::string 
+        const std::string
         serialize_response(const response_t &response) const
         {
             if (response.is_notification() && !response.has_error())

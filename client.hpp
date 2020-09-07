@@ -20,7 +20,7 @@ namespace rpc_light
         writer_t m_writer;
         reader_t m_reader;
 
-        const response_t 
+        const response_t
         handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t()) const
         {
             try
@@ -62,35 +62,44 @@ namespace rpc_light
         }
 
     public:
-        template <typename... params_type>
-        const inline std::string
-        create_request(const std::string_view &method_name, const value_t &id, params_type... params) const
-        {
-            return m_writer.serialize_request(request_t(method_name, {{params...}}, id));
-        }
-
         const inline std::string
         create_request(const std::string_view &method_name, const value_t &id) const
         {
-            return m_writer.serialize_request(request_t(method_name, {{}}, id));
+            return m_writer.serialize_request(request_t(method_name, id));
+        }
+        const inline std::string
+        create_request(const std::string_view &method_name, const value_t &id, const std::initializer_list<value_t> &params) const
+        {
+            return m_writer.serialize_request(request_t(method_name, array_t{params}, id));
         }
 
-        template <typename... params_type>
         const inline std::string
-        create_notification(const std::string_view &method_name, params_type... params) const
+        create_request(const std::string_view &method_name, const value_t &id, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
         {
-            return m_writer.serialize_request(request_t(method_name, {{params...}}));
+            return m_writer.serialize_request(request_t(method_name, struct_t{params}, id));
         }
 
         const inline std::string
         create_notification(const std::string_view &method_name) const
         {
-            return m_writer.serialize_request(request_t(method_name, {{}}));
+            return m_writer.serialize_request(request_t(method_name));
+        }
+
+        const inline std::string
+        create_notification(const std::string_view &method_name, const std::initializer_list<value_t> &params) const
+        {
+            return m_writer.serialize_request(request_t(method_name, array_t{params}));
+        }
+
+        const inline std::string
+        create_notification(const std::string_view &method_name, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
+        {
+            return m_writer.serialize_request(request_t(method_name, struct_t{params}));
         }
 
         template <typename... params_type>
         const inline std::string
-        create_batch(params_type... params) const
+        create_batch(const params_type &... params) const
         {
             return m_writer.serialize_batch_request({{m_reader.deserialize_request(params)...}});
         }
@@ -129,5 +138,5 @@ namespace rpc_light
                 },
                 response_string);
         }
-    }; // namespace rpc_light
+    };
 } // namespace rpc_light

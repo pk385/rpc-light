@@ -137,15 +137,32 @@ namespace rpc_light
             if (method == member_end || !method->value.IsString())
                 throw ex_bad_request("Invalid method value.");
 
-            params_t params;
-            if (json_params != member_end && json_params->value.IsArray())
-                for (auto &param : json_params->value.GetArray())
-                    params.emplace_back(get_value_obj(param));
+            if (json_params != member_end)
+            {
+                if (json_params->value.IsArray())
+                {
+                    if (id == member_end)
+                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<array_t>());
+
+                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<array_t>(), get_id_obj(id->value));
+                }
+                else if (json_params->value.IsObject())
+                {
+                    if (id == member_end)
+                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<struct_t>());
+
+                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<struct_t>(), get_id_obj(id->value));
+                }
+                else
+                {
+                    throw ex_bad_request();
+                }
+            }
 
             if (id == member_end)
-                return request_t(method->value.GetString(), params);
+                return request_t(method->value.GetString());
 
-            return request_t(method->value.GetString(), params, get_id_obj(id->value));
+            return request_t(method->value.GetString(), get_id_obj(id->value));
         }
 
         const response_t deserialize_response(const std::string_view &response_string) const

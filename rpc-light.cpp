@@ -6,19 +6,21 @@
 #include <iostream>
 #include <chrono>
 
-std::map<std::string, int> test_fn(int i, int ii)
+rpc_light::array_t test_fn(int i, int ii)
 {
-    return {{"test", i}};
+    return {{rpc_light::struct_t{{"test", i}, {"a", i ^ i}}, rpc_light::struct_t{{"n", i + 5}}}};
 }
 
-bool im_a_bool(const bool &b)
+rpc_light::struct_t im_a_bool(bool b, int i)
 {
-    return b;
+    if (b)
+        std::cout << "true" << std::endl;
+    return {{"int", i}};
 }
 
-auto print_notification(const std::string_view &msg)
+auto print_notification()
 {
-     std::cout << msg << std::endl;
+    std::cout << "notification" << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -27,18 +29,29 @@ int main(int argc, char **argv)
     rpc_light::client_t client;
     auto &dispatcher = server.get_dispatcher();
 
+    dispatcher.add_param_mapping("bool", {{0, "zzz"}, {1, "myint"}});
+
     dispatcher.add_method("bool", &im_a_bool);
-    dispatcher.add_method("print_notification", &print_notification);
     dispatcher.add_method("test", &test_fn);
+    dispatcher.add_method("print_notification", &print_notification);
+
+    bool b = true;
     auto batch = client.create_batch(
-        client.create_request("print_notification", 1, "WE ARE PRINTING"),
-        client.create_request("bool", 2, true),
-        client.create_request("test", 3, 1, 2));
-     std::cout << batch << std::endl << std::endl;
+        client.create_notification("print_notification"),
+        client.create_request("bool", "id1", {b, 777}),
+        client.create_request("bool", 4, {{"zzz", true}, {"myint", 5}}),
+        client.create_request("test", 3, {1, 2}));
+    std::cout << batch << std::endl
+              << std::endl;
 
     auto batch_server = server.handle_request(batch).get();
     auto batch_response = batch_server.get_response_str();
-     std::cout << batch_response << std::endl << std::endl;
+    if (batch_server.is_batch())
+        std::cout << "batch" << std::endl;
+    std::cout << batch_response << std::endl
+              << std::endl;
 
     auto batch_client = client.handle_response(batch_response).get();
+    if (batch_client.has_error())
+        std::cout << "err" << std::endl;
 }

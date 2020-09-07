@@ -71,14 +71,13 @@ namespace rpc_light
         std::future<result_t> handle_request(const std::string request_string)
         {
             return std::async(
-                std::launch::async, [=](const std::string req_str) {
+                std::launch::async, [=](std::string &&req_str) {
                     try
                     {
                         if (auto batch = m_reader.get_batch(req_str); !batch.empty())
                         {
                             std::vector<response_t> responses;
                             std::vector<std::future<result_t>> futures;
-                            auto requests = m_reader.get_batch(req_str);
                             for (auto &e : batch)
                                 futures.push_back(handle_request(e));
 

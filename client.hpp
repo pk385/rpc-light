@@ -80,19 +80,19 @@ namespace rpc_light
         }
 
         const inline std::string
-        create_notification(const std::string_view &method_name) const
+        create_request(const std::string_view &method_name) const
         {
             return m_writer.serialize_request(request_t(method_name));
         }
 
         const inline std::string
-        create_notification(const std::string_view &method_name, const std::initializer_list<value_t> &params) const
+        create_request(const std::string_view &method_name, const std::initializer_list<value_t> &params) const
         {
             return m_writer.serialize_request(request_t(method_name, array_t{params}));
         }
 
         const inline std::string
-        create_notification(const std::string_view &method_name, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
+        create_request(const std::string_view &method_name, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
         {
             return m_writer.serialize_request(request_t(method_name, struct_t{params}));
         }
@@ -107,7 +107,7 @@ namespace rpc_light
         std::future<result_t> handle_response(const std::string response_string)
         {
             return std::async(
-                std::launch::async, [=](const std::string resp_str) {
+                std::launch::async, [=](std::string &&resp_str) {
                     try
                     {
                         if (auto batch = m_reader.get_batch(resp_str); !batch.empty())

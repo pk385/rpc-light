@@ -50,10 +50,10 @@ namespace rpc_light
             case rapidjson::kObjectType:
             {
                 struct_t data;
-                for (auto it = value.MemberBegin(); it != value.MemberEnd(); ++it)
+                for (auto &e : value.GetObject())
                 {
-                    std::string_view name(it->name.GetString(), it->name.GetStringLength());
-                    data.emplace(name, get_value_obj(it->value));
+                    std::string_view name(e.name.GetString());
+                    data.emplace(name, get_value_obj(e.value));
                 }
                 return data;
             }
@@ -61,9 +61,9 @@ namespace rpc_light
             {
                 array_t array;
                 array.reserve(value.Size());
-                for (auto it = value.Begin(); it != value.End(); ++it)
+                for (auto &e : value.GetArray())
                 {
-                    array.emplace_back(get_value_obj(*it));
+                    array.emplace_back(get_value_obj(e));
                 }
                 return array;
             }

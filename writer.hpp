@@ -53,7 +53,7 @@ namespace rpc_light
                 else if constexpr (std::is_same_v<type, array_t>)
                 {
                     obj_value.SetArray();
-                    const auto arr = obj.get_alt<array_t>();
+                    auto arr = obj.get_alt<array_t>();
                     for (auto &e : arr)
                         if (auto e_value = get_obj_value(e, alloc); !e_value.IsNull())
                             obj_value.PushBack(e_value, alloc);
@@ -76,7 +76,7 @@ namespace rpc_light
                 else if constexpr (std::is_same_v<type, struct_t>)
                 {
                     obj_value.SetObject();
-                    const auto strct = obj.get_alt<struct_t>();
+                    auto strct = obj.get_alt<struct_t>();
                     for (auto &e : strct)
                         obj_value.AddMember(rapidjson::Value(e.first.c_str(), alloc),
                                             (rapidjson::Value)get_obj_value(e.second, alloc), alloc);

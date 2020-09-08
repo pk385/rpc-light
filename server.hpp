@@ -17,8 +17,6 @@ namespace rpc_light
 {
     class server_t
     {
-        reader_t m_reader;
-        writer_t m_writer;
         dispatcher_t m_dispatcher;
 
         const response_t
@@ -74,7 +72,7 @@ namespace rpc_light
                 std::launch::async, [=](std::string &&req_str) {
                     try
                     {
-                        if (auto batch = m_reader.get_batch(req_str); !batch.empty())
+                        if (auto batch = reader::get_batch(req_str); !batch.empty())
                         {
                             std::vector<response_t> responses;
                             std::vector<std::future<result_t>> futures;
@@ -89,24 +87,24 @@ namespace rpc_light
                                     has_error = true;
                                 responses.push_back(result.get_response());
                             }
-                            return result_t(responses, m_writer.serialize_batch_response(responses), has_error);
+                            return result_t(responses, writer::serialize_batch_response(responses), has_error);
                         }
-                        auto request = m_reader.deserialize_request(req_str);
+                        auto request = reader::deserialize_request(req_str);
                         try
                         {
                             auto response = m_dispatcher.invoke(request);
-                            return result_t(response, m_writer.serialize_response(response));
+                            return result_t(response, writer::serialize_response(response));
                         }
                         catch (...)
                         {
                             auto error = handle_error(std::current_exception(), request.get_id());
-                            return result_t(error, m_writer.serialize_response(error), true);
+                            return result_t(error, writer::serialize_response(error), true);
                         }
                     }
                     catch (...)
                     {
                         auto error = handle_error(std::current_exception());
-                        return result_t(error, m_writer.serialize_response(error), true);
+                        return result_t(error, writer::serialize_response(error), true);
                     }
                 },
                 request_string);

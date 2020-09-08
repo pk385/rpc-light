@@ -14,10 +14,9 @@
 
 namespace rpc_light
 {
-
-    class reader_t
+    namespace reader
     {
-        const value_t get_id_obj(const rapidjson::Value &id) const
+        const value_t get_id_obj(const rapidjson::Value &id)
         {
             if (id.IsString())
                 return std::string(id.GetString());
@@ -34,7 +33,7 @@ namespace rpc_light
             throw ex_bad_request("Invalid id type.");
         }
 
-        const value_t get_value_obj(const rapidjson::Value &value) const
+        const value_t get_value_obj(const rapidjson::Value &value)
         {
             switch (value.GetType())
             {
@@ -91,8 +90,7 @@ namespace rpc_light
             throw ex_bad_request("Invalid object type.");
         }
 
-    public:
-        const std::vector<std::string> get_batch(const std::string_view &str) const
+        const std::vector<std::string> get_batch(const std::string_view &str)
         {
             std::vector<std::string> batch;
             rapidjson::Document document;
@@ -113,7 +111,7 @@ namespace rpc_light
             return batch;
         }
 
-        const request_t deserialize_request(const std::string_view &request_string) const
+        const request_t deserialize_request(const std::string_view &request_string)
         {
             rapidjson::Document document;
             document.Parse(request_string.data());
@@ -165,7 +163,7 @@ namespace rpc_light
             return request_t(method->value.GetString(), get_id_obj(id->value));
         }
 
-        const response_t deserialize_response(const std::string_view &response_string) const
+        const response_t deserialize_response(const std::string_view &response_string)
         {
             rapidjson::Document document;
             document.Parse(response_string.data());
@@ -224,5 +222,5 @@ namespace rpc_light
             else
                 throw ex_bad_request("Non-inclusive result.");
         }
-    };
+    }; // namespace reader
 } // namespace rpc_light

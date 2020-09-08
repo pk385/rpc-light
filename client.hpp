@@ -17,8 +17,6 @@ namespace rpc_light
 {
     class client_t
     {
-        writer_t m_writer;
-        reader_t m_reader;
 
         const response_t
         handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t()) const
@@ -65,43 +63,43 @@ namespace rpc_light
         const inline std::string
         create_request(const std::string_view &method_name, const value_t &id) const
         {
-            return m_writer.serialize_request(request_t(method_name, id));
+            return writer::serialize_request(request_t(method_name, id));
         }
         const inline std::string
         create_request(const std::string_view &method_name, const value_t &id, const std::initializer_list<value_t> &params) const
         {
-            return m_writer.serialize_request(request_t(method_name, array_t{params}, id));
+            return writer::serialize_request(request_t(method_name, array_t{params}, id));
         }
 
         const inline std::string
         create_request(const std::string_view &method_name, const value_t &id, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
         {
-            return m_writer.serialize_request(request_t(method_name, struct_t{params}, id));
+            return writer::serialize_request(request_t(method_name, struct_t{params}, id));
         }
 
         const inline std::string
         create_request(const std::string_view &method_name) const
         {
-            return m_writer.serialize_request(request_t(method_name));
+            return writer::serialize_request(request_t(method_name));
         }
 
         const inline std::string
         create_request(const std::string_view &method_name, const std::initializer_list<value_t> &params) const
         {
-            return m_writer.serialize_request(request_t(method_name, array_t{params}));
+            return writer::serialize_request(request_t(method_name, array_t{params}));
         }
 
         const inline std::string
         create_request(const std::string_view &method_name, const std::initializer_list<std::pair<const std::string, value_t>> &params) const
         {
-            return m_writer.serialize_request(request_t(method_name, struct_t{params}));
+            return writer::serialize_request(request_t(method_name, struct_t{params}));
         }
 
         template <typename... params_type>
         const inline std::string
         create_batch(const params_type &... params) const
         {
-            return m_writer.serialize_batch_request({{m_reader.deserialize_request(params)...}});
+            return writer::serialize_batch_request({{reader::deserialize_request(params)...}});
         }
 
         std::future<result_t> handle_response(const std::string response_string)
@@ -110,7 +108,7 @@ namespace rpc_light
                 std::launch::async, [=](std::string &&resp_str) {
                     try
                     {
-                        if (auto batch = m_reader.get_batch(resp_str); !batch.empty())
+                        if (auto batch = reader::get_batch(resp_str); !batch.empty())
                         {
                             std::vector<response_t> responses;
                             std::vector<std::future<result_t>> futures;
@@ -127,7 +125,7 @@ namespace rpc_light
                             }
                             return result_t(responses, has_error);
                         }
-                        auto response = m_reader.deserialize_response(resp_str);
+                        auto response = reader::deserialize_response(resp_str);
                         return result_t(response);
                     }
                     catch (...)

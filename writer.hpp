@@ -14,10 +14,10 @@
 
 namespace rpc_light
 {
-    class writer_t
+    namespace writer
     {
         const rapidjson::Value
-        get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
+        get_id_value(const value_t &id, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
         {
             rapidjson::Value id_value;
             std::visit([&](auto &&arg) {
@@ -42,7 +42,7 @@ namespace rpc_light
         }
 
         const rapidjson::Value
-        get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc) const
+        get_obj_value(const value_t &obj, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> &alloc)
         {
             rapidjson::Value obj_value;
             std::visit([&](auto &&arg) {
@@ -88,9 +88,8 @@ namespace rpc_light
             return obj_value;
         }
 
-    public:
         const std::string
-        serialize_batch_request(const std::vector<request_t> &requests) const
+        serialize_batch_request(const std::vector<request_t> &requests)
         {
             rapidjson::Document document;
             document.SetArray();
@@ -138,7 +137,7 @@ namespace rpc_light
         }
 
         const std::string
-        serialize_batch_response(const std::vector<response_t> &responses) const
+        serialize_batch_response(const std::vector<response_t> &responses)
         {
             rapidjson::Document document;
             document.SetArray();
@@ -190,7 +189,7 @@ namespace rpc_light
         }
 
         const std::string
-        serialize_request(const request_t &request) const
+        serialize_request(const request_t &request)
         {
             rapidjson::Document document;
             document.SetObject();
@@ -232,7 +231,7 @@ namespace rpc_light
         }
 
         const std::string
-        serialize_response(const response_t &response) const
+        serialize_response(const response_t &response)
         {
             if (response.is_notification() && !response.has_error())
                 return "";
@@ -276,5 +275,5 @@ namespace rpc_light
             document.Accept(writer);
             return strbuf.GetString();
         }
-    };
+    }; // namespace writer
 } // namespace rpc_light

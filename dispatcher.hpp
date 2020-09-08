@@ -61,15 +61,16 @@ namespace rpc_light
         {
             method_t expr = [method](const array_t &params) -> value_t {
                 constexpr auto params_size = sizeof...(params_type);
-
                 if (params_size != params.size())
                     throw ex_bad_params("Params length mismatch.");
+
                 try
                 {
                     if constexpr (!std::is_void_v<return_type>)
                     {
                         if constexpr (params_size > 0)
                             return value_t(method(params[index].get_alt<std::decay_t<params_type>>()...));
+
                         else
                             return value_t(method());
                     }
@@ -77,12 +78,14 @@ namespace rpc_light
                     {
                         if constexpr (params_size > 0)
                             method(params[index].get_alt<std::decay_t<params_type>>()...);
+
                         else
                             method();
+
                         return null_t();
                     }
                 }
-                catch (std::bad_variant_access e)
+                catch (...)
                 {
                     throw ex_bad_params("Invalid param types.");
                 }

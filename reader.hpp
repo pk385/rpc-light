@@ -1,8 +1,8 @@
 #pragma once
 
 #include "exceptions.hpp"
-#include "value.hpp"
 #include "aliases.hpp"
+#include "value.hpp"
 #include "request.hpp"
 #include "response.hpp"
 #include "rapidjson/document.h"
@@ -50,10 +50,8 @@ namespace rpc_light
             {
                 struct_t data;
                 for (auto &e : value.GetObject())
-                {
-                    std::string_view name(e.name.GetString());
-                    data.emplace(name, get_value_obj(e.value));
-                }
+                    data.emplace(std::string_view(e.name.GetString()), get_value_obj(e.value));
+
                 return data;
             }
             case rapidjson::kArrayType:
@@ -61,9 +59,8 @@ namespace rpc_light
                 array_t array;
                 array.reserve(value.Size());
                 for (auto &e : value.GetArray())
-                {
                     array.emplace_back(get_value_obj(e));
-                }
+
                 return array;
             }
             case rapidjson::kStringType:
@@ -100,7 +97,9 @@ namespace rpc_light
 
             if (document.IsArray())
             {
-                for (auto &e : document.GetArray())
+                auto arr = document.GetArray();
+                batch.reserve(arr.Size());
+                for (auto &e : arr)
                 {
                     rapidjson::StringBuffer strbuf;
                     rapidjson::Writer writer(strbuf);
@@ -140,16 +139,16 @@ namespace rpc_light
                 if (json_params->value.IsArray())
                 {
                     if (id == member_end)
-                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<array_t>());
+                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_value<array_t>());
 
-                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<array_t>(), get_id_obj(id->value));
+                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_value<array_t>(), get_id_obj(id->value));
                 }
                 else if (json_params->value.IsObject())
                 {
                     if (id == member_end)
-                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<struct_t>());
+                        return request_t(method->value.GetString(), get_value_obj(json_params->value).get_value<struct_t>());
 
-                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_alt<struct_t>(), get_id_obj(id->value));
+                    return request_t(method->value.GetString(), get_value_obj(json_params->value).get_value<struct_t>(), get_id_obj(id->value));
                 }
                 else
                 {

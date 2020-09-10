@@ -1,8 +1,8 @@
 #pragma once
 
 #include "exceptions.hpp"
-#include "value.hpp"
 #include "aliases.hpp"
+#include "value.hpp"
 #include "reader.hpp"
 #include "writer.hpp"
 #include "dispatcher.hpp"
@@ -79,6 +79,7 @@ namespace rpc_light
                             for (auto &e : batch)
                                 futures.push_back(handle_request(e));
 
+                            responses.reserve(futures.size());
                             bool has_error = false;
                             for (auto &e : futures)
                             {

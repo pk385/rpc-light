@@ -1,6 +1,7 @@
 #pragma once
 
 #include "exceptions.hpp"
+#include "aliases.hpp"
 
 #include <variant>
 #include <string>
@@ -27,9 +28,9 @@ namespace rpc_light
         {
         };
 
-        using variant_t = std::variant<std::monostate, std::vector<value_t>,
+        using variant_t = std::variant<null_t, array_t,
                                        bool, double, int32_t, int64_t, std::string,
-                                       std::map<std::string, value_t>>;
+                                       struct_t>;
 
         variant_t m_value;
 
@@ -41,19 +42,25 @@ namespace rpc_light
 
         template <typename value_type>
         value_t(const std::vector<value_type> &value)
-            : m_value(std::vector<value_t>(value.begin(), value.end())) {}
+            : m_value(array_t(value.begin(), value.end())) {}
 
         template <typename value_type>
         value_t(const std::map<std::string, value_type> &value)
-            : m_value(std::map<std::string, value_t>(value.begin(), value.end())) {}
+            : m_value(struct_t(value.begin(), value.end())) {}
+
+        template <typename value_type>
+        const inline bool is_type() const
+        {
+            return std::holds_alternative<value_type>(m_value);
+        }
 
         const inline bool has_value() const
         {
-            return !std::holds_alternative<std::monostate>(m_value);
+            return !std::holds_alternative<null_t>(m_value);
         }
 
         template <typename value_type>
-        const value_type get_alt(const bool &no_convert = false) const
+        const value_type get_value(const bool &no_convert = false) const
         {
 
             if constexpr (can_hold_alt<value_type, variant_t>::value)

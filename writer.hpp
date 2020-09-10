@@ -1,8 +1,8 @@
 #pragma once
 
 #include "exceptions.hpp"
-#include "value.hpp"
 #include "aliases.hpp"
+#include "value.hpp"
 #include "request.hpp"
 #include "response.hpp"
 #include "rapidjson/document.h"
@@ -26,13 +26,13 @@ namespace rpc_light
                     id_value.SetNull();
 
                 else if constexpr (std::is_same_v<type, int32_t>)
-                    id_value.SetInt(id.get_alt<int32_t>(true));
+                    id_value.SetInt(id.get_value<int32_t>(true));
 
                 else if constexpr (std::is_same_v<type, int64_t>)
-                    id_value.SetInt64(id.get_alt<int64_t>(true));
+                    id_value.SetInt64(id.get_value<int64_t>(true));
 
                 else if constexpr (std::is_same_v<type, std::string>)
-                    id_value.SetString(id.get_alt<std::string>(true).c_str(), alloc);
+                    id_value.SetString(id.get_value<std::string>(true).c_str(), alloc);
 
                 else
                     throw ex_internal_error("Invalid id type.");
@@ -53,33 +53,32 @@ namespace rpc_light
                 else if constexpr (std::is_same_v<type, array_t>)
                 {
                     obj_value.SetArray();
-                    auto arr = obj.get_alt<array_t>();
+                    auto arr = obj.get_value<array_t>();
                     for (auto &e : arr)
-                        if (auto e_value = get_obj_value(e, alloc); !e_value.IsNull())
-                            obj_value.PushBack(e_value, alloc);
+                        obj_value.PushBack(rapidjson::Value(get_obj_value(e, alloc), alloc), alloc);
                 }
                 else if constexpr (std::is_same_v<type, bool>)
-                    obj_value.SetBool(obj.get_alt<bool>());
+                    obj_value.SetBool(obj.get_value<bool>());
 
                 else if constexpr (std::is_same_v<type, double>)
-                    obj_value.SetDouble(obj.get_alt<double>());
+                    obj_value.SetDouble(obj.get_value<double>());
 
                 else if constexpr (std::is_same_v<type, int32_t>)
-                    obj_value.SetInt(obj.get_alt<int32_t>());
+                    obj_value.SetInt(obj.get_value<int32_t>());
 
                 else if constexpr (std::is_same_v<type, int64_t>)
-                    obj_value.SetInt64(obj.get_alt<int64_t>());
+                    obj_value.SetInt64(obj.get_value<int64_t>());
 
                 else if constexpr (std::is_same_v<type, std::string>)
-                    obj_value.SetString(obj.get_alt<std::string>().c_str(), alloc);
+                    obj_value.SetString(obj.get_value<std::string>().c_str(), alloc);
 
                 else if constexpr (std::is_same_v<type, struct_t>)
                 {
                     obj_value.SetObject();
-                    auto strct = obj.get_alt<struct_t>();
+                    auto strct = obj.get_value<struct_t>();
                     for (auto &e : strct)
                         obj_value.AddMember(rapidjson::Value(e.first.c_str(), alloc),
-                                            (rapidjson::Value)get_obj_value(e.second, alloc), alloc);
+                                            rapidjson::Value(get_obj_value(e.second, alloc)), alloc);
                 }
                 else
                     throw ex_internal_error("Invalid object type.");
@@ -94,6 +93,7 @@ namespace rpc_light
             rapidjson::Document document;
             document.SetArray();
             auto &alloc = document.GetAllocator();
+            document.Reserve(requests.size(), alloc);
             for (auto &e : requests)
             {
                 rapidjson::Value request;
@@ -142,6 +142,7 @@ namespace rpc_light
             rapidjson::Document document;
             document.SetArray();
             auto &alloc = document.GetAllocator();
+            document.Reserve(responses.size(), alloc);
             for (auto &e : responses)
             {
                 if (e.is_notification() && !e.has_error())

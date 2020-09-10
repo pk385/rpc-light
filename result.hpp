@@ -1,8 +1,8 @@
 #pragma once
 
 #include "exceptions.hpp"
-#include "value.hpp"
 #include "aliases.hpp"
+#include "value.hpp"
 #include "response.hpp"
 
 #include <string>
@@ -13,7 +13,6 @@ namespace rpc_light
 {
     class result_t
     {
-        using batch_t = std::vector<response_t>;
         const std::string m_string;
         const bool m_has_error, m_is_batch, m_has_response;
         const std::variant<null_t, response_t, batch_t> m_response;

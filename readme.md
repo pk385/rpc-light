@@ -1,3 +1,26 @@
+# rpc-light
+
+**rpc-light** is a JSON-RPC 2.0 client and server implementation that takes advantage of improvements and features added to the C++ standard library with the release of C++17.
+
+There are multiple features and qualities of this library that might make it right for your next project:
+* simple and lightweight
+* fully compliant with [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification), including named parameters and batch processing
+* easily bind to any function the accepts or returns JSON compatible types without modification
+* use any types that are implicitly covertible to JSON types
+* ability to register converters for more complex conversions
+* transport agnostic, bring your own transport
+* header-only, easy to add to your project
+  
+## Requirements
+* a C++17 capable compiler
+* [https://github.com/Tencent/rapidjson/]RapidJSON
+
+## Installation
+* copy the required header files to your project include path
+
+## Usage
+the code below demonstrates both a client and server example
+```
 #include "server.hpp"
 #include "client.hpp"
 
@@ -54,8 +77,8 @@ bool error(int i)
 
 int main(int argc, char **argv)
 {
-    rpc_light::server_t server;
     rpc_light::client_t client;
+    rpc_light::server_t server;
     auto &dispatcher = server.get_dispatcher();
 
     //register a function param mapping to accept params as json objects. usage: {param index, param name}

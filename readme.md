@@ -7,7 +7,7 @@ There are multiple features and qualities of this library that might make it rig
 * fully compliant with [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification), including named parameters and batch processing
 * easily bind to any function the accepts or returns JSON compatible types without modification
 * use any types that are implicitly covertible to JSON types
-* ability to register converters for more complex conversions
+* (TODO) ability to register converters for more complex conversions
 * transport agnostic, bring your own transport
 * header-only, easy to add to your project
   
@@ -20,7 +20,7 @@ There are multiple features and qualities of this library that might make it rig
 
 ## Usage
 the code below demonstrates both a client and server example
-```
+```C++
 #include "server.hpp"
 #include "client.hpp"
 

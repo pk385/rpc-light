@@ -5,9 +5,9 @@
 #include "value.hpp"
 #include "request.hpp"
 #include "response.hpp"
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "../rapidjson/document.h"
+#include "../rapidjson/writer.h"
+#include "../rapidjson/stringbuffer.h"
 
 #include <string>
 #include <vector>

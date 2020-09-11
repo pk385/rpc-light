@@ -1,5 +1,5 @@
-#include "server.hpp"
-#include "client.hpp"
+#include "../include/rpc-light/server.hpp"
+#include "../include/rpc-light/client.hpp"
 
 #include <string>
 #include <iostream>

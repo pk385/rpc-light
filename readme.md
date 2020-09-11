@@ -13,7 +13,7 @@ There are multiple features and qualities of this library that might make it rig
   
 ## Requirements
 * a C++17 capable compiler
-* [https://github.com/Tencent/rapidjson/]RapidJSON
+* [RapidJSON](https://github.com/Tencent/rapidjson/)
 
 ## Installation
 * copy the required header files to your project include path

@@ -6,7 +6,7 @@ There are multiple features and qualities of this library that might make it rig
 * simple and lightweight
 * fully compliant with [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification), including named parameters and batch processing
 * easily bind to any function the accepts or returns JSON compatible types without modification
-* use any types that are implicitly covertible to JSON types
+* use any types that are implicitly convertible to JSON types
 * (TODO) ability to register converters for more complex conversions
 * transport agnostic, bring your own transport
 * header-only, easy to add to your project

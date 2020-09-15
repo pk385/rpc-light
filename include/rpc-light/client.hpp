@@ -12,11 +12,17 @@
 #include <string>
 #include <future>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 namespace rpc_light
 {
     class client_t
     {
+        std::mutex m_mutex;
+        std::future<void> m_worker;
+        std::condition_variable event;
+        std::vector<std::pair<const std::string, std::promise<const result_t>>> m_queue;
 
         const response_t
         handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t()) const
@@ -59,7 +65,76 @@ namespace rpc_light
             }
         }
 
+        const bool is_working() const
+        {
+            return (m_worker.valid() && m_worker.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout);
+        }
+
+        void start_worker()
+        {
+            m_worker = std::async(std::launch::async, &client_t::worker_proc, this);
+        }
+
+        void worker_proc()
+        {
+            while (true)
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                if (!event.wait_for(lock, std::chrono::seconds(5), [&] { return !m_queue.empty(); }))
+                    return;
+
+                for (auto &e : m_queue)
+                {
+                    e.second.set_value(get_result(e.first));
+                }
+                m_queue.clear();
+            }
+        }
+
+        result_t get_result(const std::string &response_string)
+        {
+            try
+            {
+                if (auto batch = reader::get_batch(response_string); !batch.empty())
+                {
+                    std::vector<response_t> responses;
+                    bool has_error = false;
+                    for (auto &e : batch)
+                    {
+                        auto result = get_result(e);
+                        if (result.has_error())
+                            has_error = true;
+
+                        responses.push_back(result.get_response());
+                    }
+                    return result_t(responses, has_error);
+                }
+                auto response = reader::deserialize_response(response_string);
+                return result_t(response);
+            }
+            catch (...)
+            {
+                auto error = handle_error(std::current_exception());
+                return result_t(error, true);
+            }
+        }
+
     public:
+        auto handle_response(const std::string response_string)
+        {
+            std::future<const result_t> result;
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                if (!is_working())
+                    start_worker();
+
+                m_queue.push_back({response_string, std::promise<const result_t>()});
+                result = m_queue.back().second.get_future();
+            }
+            event.notify_all();
+            return result;
+        }
+
         const inline std::string
         create_request(const std::string_view &method_name, const value_t &id) const
         {
@@ -100,43 +175,6 @@ namespace rpc_light
         create_batch(const params_type &... params) const
         {
             return writer::serialize_batch_request({{reader::deserialize_request(params)...}});
-        }
-
-        std::future<result_t> handle_response(const std::string response_string)
-        {
-            return std::async(
-                std::launch::async, [=](std::string &&resp_str) {
-                    try
-                    {
-                        if (auto batch = reader::get_batch(resp_str); !batch.empty())
-                        {
-                            std::vector<response_t> responses;
-                            std::vector<std::future<result_t>> futures;
-                            for (auto &e : batch)
-                                futures.push_back(handle_response(e));
-
-                            responses.reserve(futures.size());
-                            bool has_error = false;
-                            for (auto &e : futures)
-                            {
-                                auto result = e.get();
-                                if (result.has_error())
-                                    has_error = true;
-
-                                responses.push_back(result.get_response());
-                            }
-                            return result_t(responses, has_error);
-                        }
-                        auto response = reader::deserialize_response(resp_str);
-                        return result_t(response);
-                    }
-                    catch (...)
-                    {
-                        auto error = handle_error(std::current_exception());
-                        return result_t(error, true);
-                    }
-                },
-                response_string);
         }
     };
 } // namespace rpc_light

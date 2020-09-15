@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     std::cout << "batch request: " << batch_request << std::endl
               << std::endl;
 
-    //server request handler runs in a new thread and returns a future
+    //server request handler runs in a worker thread and returns a future
     auto batch_server = server.handle_request(batch_request).get();
 
     //get the server response serialization as string to be sent to the client
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     std::cout << "batch response: " << batch_response << std::endl
               << std::endl;
 
-    //client response handler also uses std::async
+    //client response handler also uses a worker thread
     auto batch_client = client.handle_response(batch_response).get();
     if (batch_client.is_batch())
     {

@@ -7,7 +7,7 @@ There are multiple features and qualities of this library that might make it rig
 * fully compliant with [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification), including named parameters and batch processing
 * easily bind to any function the accepts or returns JSON compatible types without modification
 * use any types that are implicitly convertible to JSON types
-* (TODO) ability to register converters for more complex conversions
+* ability to register converters for more complex conversions
 * transport agnostic, bring your own transport
 * header-only, easy to add to your project
   
@@ -21,9 +21,8 @@ There are multiple features and qualities of this library that might make it rig
 ## Usage
 the code below demonstrates both a client and server example
 ```C++
-#include "server.hpp"
-#include "client.hpp"
-
+#include "../include/rpc-light/server.hpp"
+#include "../include/rpc-light/client.hpp"
 #include <string>
 #include <iostream>
 
@@ -64,10 +63,16 @@ t my_template(t arg)
     return arg;
 }
 
-uint8_t convert(uint8_t smallint)
+uint8_t implicit_convert(uint8_t smallint)
 {
     //implicit conversions work too
     return smallint;
+}
+
+int explicit_convert(int integer)
+{
+    //explicit conversion using converter
+    return integer;
 }
 
 bool error(int i)
@@ -77,9 +82,12 @@ bool error(int i)
 
 int main(int argc, char **argv)
 {
-    rpc_light::client_t client;
     rpc_light::server_t server;
+    rpc_light::client_t client;
     auto &dispatcher = server.get_dispatcher();
+
+    //register a converter expression for complex or explicit conversion, like string -> int conversion
+    rpc_light::global_converter.add_convert([](const std::string &str) { return std::stoi(str); });
 
     //register a function param mapping to accept params as json objects. usage: {param index, param name}
     dispatcher.add_param_mapping("return_struct", {{0, "myint1"}, {1, "myint2"}});
@@ -91,7 +99,8 @@ int main(int argc, char **argv)
     my_struct_t my_struct;
     dispatcher.add_method("my_struct.class_method", &my_struct_t::class_method, my_struct);
     dispatcher.add_method("my_template", &my_template<double>);
-    dispatcher.add_method("convert", &convert);
+    dispatcher.add_method("imp_convert", &implicit_convert);
+    dispatcher.add_method("exp_convert", &explicit_convert);
     dispatcher.add_method("error", &error);
 
     //create a batch to process multiple requests
@@ -101,8 +110,9 @@ int main(int argc, char **argv)
         client.create_request("notification", {"some text."}),
         client.create_request("my_struct.class_method", 3),
         client.create_request("my_template", 4, {1.23456789}),
-        client.create_request("convert", 5, {2.5}),
-        client.create_request("error", 6, {"this will error."}));
+        client.create_request("imp_convert", 5, {2.5}),
+        client.create_request("exp_convert", 6, {"100"}),
+        client.create_request("error", 7, {"this will error."}));
 
     std::cout << "batch request: " << batch_request << std::endl
               << std::endl;

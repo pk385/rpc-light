@@ -10,7 +10,6 @@
 #include <functional>
 #include <vector>
 #include <unordered_map>
-#include <shared_mutex>
 
 namespace rpc_light
 {
@@ -19,11 +18,9 @@ namespace rpc_light
     {
         std::unordered_map<std::string, method_t> m_methods;
         std::unordered_map<std::string, param_map_t> m_mappings;
-        std::shared_mutex m_method_mutex, m_params_mutex;
 
         const array_t struct_params_to_arr(const std::string_view &name, const struct_t &params)
         {
-            std::shared_lock lock(m_params_mutex);
             if (auto method_iter = m_mappings.find(name.data()); method_iter != m_mappings.end())
             {
                 array_t arr_params;
@@ -136,29 +133,22 @@ namespace rpc_light
 
         void add_method(const std::string_view &name, const method_t &method)
         {
-            {
-                std::shared_lock lock(m_method_mutex);
-                if (m_methods.find(name.data()) != m_methods.end())
-                    throw ex_method_used("Method already bound.");
-            }
-            std::unique_lock lock(m_method_mutex);
+            if (m_methods.find(name.data()) != m_methods.end())
+                throw ex_method_used("Method already bound.");
+
             m_methods.emplace(name, method);
         }
 
         void add_param_mapping(const std::string_view &name, const param_map_t &mapping)
         {
-            {
-                std::shared_lock lock(m_params_mutex);
-                if (m_mappings.find(name.data()) != m_mappings.end())
-                    throw ex_method_used("Method params mapping already bound.");
-            }
-            std::unique_lock lock(m_params_mutex);
+            if (m_mappings.find(name.data()) != m_mappings.end())
+                throw ex_method_used("Method params mapping already bound.");
+
             m_mappings.emplace(name, mapping);
         }
 
         const response_t invoke(const request_t &request)
         {
-            std::shared_lock lock(m_method_mutex);
             if (auto iter = m_methods.find(request.get_method()); iter != m_methods.end())
             {
                 if (request.is_notification())

@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
     //create a batch to process multiple requests
     auto batch_request = client.create_batch(
-        client.create_request("return_struct", 1, {5, 10}),
+        client.create_request("return_struct", 1, {{"myint1", 5}, {"myint2", 10}}),
         client.create_request("return_array", 2, {rpc_light::array_t{1.0, 2.0, 3.0}}),
         client.create_request("notification", {"some text."}),
         client.create_request("my_struct.class_method", 3),

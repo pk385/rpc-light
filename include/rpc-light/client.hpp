@@ -14,6 +14,8 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
+#include <queue>
 
 namespace rpc_light
 {
@@ -22,7 +24,9 @@ namespace rpc_light
         std::mutex m_mutex;
         std::future<void> m_worker;
         std::condition_variable event;
-        std::vector<std::pair<const std::string, std::promise<const result_t>>> m_queue;
+        std::queue<std::pair<const std::string, std::promise<const result_t>>> m_queue;
+
+        bool worker_running = false;
 
         const response_t
         handle_error(const std::exception_ptr &e_ptr, const value_t &id = null_t()) const
@@ -65,14 +69,10 @@ namespace rpc_light
             }
         }
 
-        const bool is_working() const
-        {
-            return (m_worker.valid() && m_worker.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout);
-        }
-
         void start_worker()
         {
             m_worker = std::async(std::launch::async, &client_t::worker_proc, this);
+            worker_running = true;
         }
 
         void worker_proc()
@@ -81,17 +81,17 @@ namespace rpc_light
             {
                 std::unique_lock<std::mutex> lock(m_mutex);
                 if (!event.wait_for(lock, std::chrono::seconds(5), [&] { return !m_queue.empty(); }))
-                    return;
-
-                for (auto &e : m_queue)
                 {
-                    e.second.set_value(get_result(e.first));
+                    worker_running = false;
+                    return;
                 }
-                m_queue.clear();
+                auto& pair = m_queue.front();
+                pair.second.set_value(get_result(pair.first));
+                m_queue.pop();
             }
         }
 
-        result_t get_result(const std::string &response_string)
+        const result_t get_result(const std::string response_string)
         {
             try
             {
@@ -120,16 +120,15 @@ namespace rpc_light
         }
 
     public:
-        auto handle_response(const std::string response_string)
+        auto handle_response(const std::string &response_string)
         {
             std::future<const result_t> result;
             {
                 std::unique_lock<std::mutex> lock(m_mutex);
-                if (!is_working())
+                if (!worker_running)
                     start_worker();
 
-                m_queue.push_back({response_string, std::promise<const result_t>()});
-                result = m_queue.back().second.get_future();
+                result = m_queue.emplace(response_string, std::promise<const result_t>()).second.get_future();
             }
             event.notify_all();
             return result;

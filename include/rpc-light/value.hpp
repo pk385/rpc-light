@@ -54,32 +54,33 @@ namespace rpc_light
         }
 
         template <typename value_type>
-        const value_type get_value(const bool &no_convert = false) const
+        const value_type get_value(const bool &allow_convert = true) const
         {
-
             if constexpr (can_hold_alt<value_type, variant_t>::value)
                 if (std::holds_alternative<value_type>(m_value))
                     return std::get<value_type>(m_value);
 
-            value_type value;
-            bool found = false;
-            std::visit([&](auto &&arg) {
-                using type = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_convertible_v<type, value_type>)
-                {
-                    value = std::get<type>(m_value);
-                    found = true;
-                }
-                else
-                {
-                    value = m_converter.convert<value_type>(arg);
-                    found = true;
-                }
-            },
-                       m_value);
-            if (found)
-                return value;
-
+            if (allow_convert)
+            {
+                value_type value;
+                bool found = false;
+                std::visit([&](auto &&arg) {
+                    using type = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_convertible_v<type, value_type>)
+                    {
+                        value = std::get<type>(m_value);
+                        found = true;
+                    }
+                    else
+                    {
+                        value = m_converter.convert<value_type>(arg);
+                        found = true;
+                    }
+                },
+                           m_value);
+                if (found)
+                    return value;
+            }
             throw ex_internal_error("Bad alternative.");
         }
 

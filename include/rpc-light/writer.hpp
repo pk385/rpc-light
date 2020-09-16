@@ -26,13 +26,13 @@ namespace rpc_light
                     id_value.SetNull();
 
                 else if constexpr (std::is_same_v<type, int32_t>)
-                    id_value.SetInt(id.get_value<int32_t>(true));
+                    id_value.SetInt(id.get_value<int32_t>(false));
 
                 else if constexpr (std::is_same_v<type, int64_t>)
-                    id_value.SetInt64(id.get_value<int64_t>(true));
+                    id_value.SetInt64(id.get_value<int64_t>(false));
 
                 else if constexpr (std::is_same_v<type, std::string>)
-                    id_value.SetString(id.get_value<std::string>(true).c_str(), alloc);
+                    id_value.SetString(id.get_value<std::string>(false).c_str(), alloc);
 
                 else
                     throw ex_internal_error("Invalid id type.");
